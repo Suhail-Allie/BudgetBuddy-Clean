@@ -11,6 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.BudgetBuddy">
 
+        <!-- Login Screen (Launcher) -->
         <activity
             android:name=".LoginActivity"
             android:exported="true">
@@ -20,12 +21,23 @@
             </intent-filter>
         </activity>
 
+        <!-- Register Screen -->
         <activity
             android:name=".RegisterActivity"
             android:exported="false" />
 
+        <!-- Dashboard -->
         <activity
             android:name=".MainActivity"
+            android:exported="false" />
+
+        <!-- Member 2 Screens -->
+        <activity
+            android:name=".CategoryActivity"
+            android:exported="false" />
+
+        <activity
+            android:name=".BudgetGoalActivity"
             android:exported="false" />
 
     </application>

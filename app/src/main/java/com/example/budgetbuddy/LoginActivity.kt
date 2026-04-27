@@ -35,7 +35,7 @@ class LoginActivity : AppCompatActivity() {
             if (username.isEmpty()) {
                 etUsername.error = "Please enter username"
                 etUsername.requestFocus()
-                Log.d("Login", "Login failed: username field empty")
+                Log.d("Login", "Login failed: username empty")
                 return@setOnClickListener
             }
 
@@ -43,22 +43,22 @@ class LoginActivity : AppCompatActivity() {
             if (password.isEmpty()) {
                 etPassword.error = "Please enter password"
                 etPassword.requestFocus()
-                Log.d("Login", "Login failed: password field empty")
+                Log.d("Login", "Login failed: password empty")
                 return@setOnClickListener
             }
 
-            // Retrieve saved user credentials from SharedPreferences
+            // Retrieve saved user credentials
             val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
             val savedUsername = sharedPref.getString("username", null)
             val savedPassword = sharedPref.getString("password", null)
 
             if (savedUsername == null || savedPassword == null) {
                 Toast.makeText(this, "No user registered yet", Toast.LENGTH_SHORT).show()
-                Log.d("Login", "Login failed: no registered user found")
+                Log.d("Login", "No registered user found")
                 return@setOnClickListener
             }
 
-            // Check if entered details match saved details
+            // Check credentials
             if (username == savedUsername && password == savedPassword) {
                 Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
                 Log.d("Login", "User logged in successfully")

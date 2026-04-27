@@ -2,22 +2,16 @@ package com.example.budgetbuddy
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import android.widget.Toast
+import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var tvWelcomeUser: TextView
     private lateinit var tvBalance: TextView
+    private lateinit var tvGoals: TextView
+    private lateinit var tvCategoryCount: TextView
     private lateinit var etAmount: EditText
-    private lateinit var btnAddIncome: Button
-    private lateinit var btnAddExpense: Button
-    private lateinit var btnClearHistory: Button
-    private lateinit var btnLogout: Button
     private lateinit var tvTransactions: TextView
 
     private var balance = 0.0
@@ -27,118 +21,96 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Initialize UI components
+        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
+
         tvWelcomeUser = findViewById(R.id.tvWelcomeUser)
         tvBalance = findViewById(R.id.tvBalance)
+        tvGoals = findViewById(R.id.tvGoals)
+        tvCategoryCount = findViewById(R.id.tvCategoryCount)
         etAmount = findViewById(R.id.etAmount)
-        btnAddIncome = findViewById(R.id.btnAddIncome)
-        btnAddExpense = findViewById(R.id.btnAddExpense)
-        btnClearHistory = findViewById(R.id.btnClearHistory)
-        btnLogout = findViewById(R.id.btnLogout)
         tvTransactions = findViewById(R.id.tvTransactions)
 
-        // Load saved user data, balance and transaction history
-        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
+        val btnIncome = findViewById<Button>(R.id.btnAddIncome)
+        val btnExpense = findViewById<Button>(R.id.btnAddExpense)
+        val btnCategories = findViewById<Button>(R.id.btnManageCategories)
+        val btnGoals = findViewById<Button>(R.id.btnBudgetGoals)
+        val btnClear = findViewById<Button>(R.id.btnClearHistory)
+        val btnLogout = findViewById<Button>(R.id.btnLogout)
+
         val username = sharedPref.getString("username", "User")
+        tvWelcomeUser.text = "Welcome, $username"
 
         balance = sharedPref.getFloat("balance", 0f).toDouble()
         transactionHistory = sharedPref.getString("transactions", "") ?: ""
 
-        tvWelcomeUser.text = "Welcome, $username"
         updateBalance()
-        updateTransactionText()
+        updateTransactions()
 
-        Log.d("Dashboard", "Dashboard opened for user: $username")
+        // 🔥 LOAD GOALS
+        val min = sharedPref.getFloat("minGoal", 0f)
+        val max = sharedPref.getFloat("maxGoal", 0f)
 
-        // Add income to balance and update history
-        btnAddIncome.setOnClickListener {
-            val amount = etAmount.text.toString().toDoubleOrNull()
+        if (min == 0f && max == 0f) {
+            tvGoals.text = "Goals: Not set"
+        } else {
+            tvGoals.text = "Goals: R%.2f - R%.2f".format(min, max)
+        }
 
-            if (amount == null || amount <= 0) {
-                Toast.makeText(this, "Enter a valid amount greater than 0", Toast.LENGTH_SHORT).show()
-                Log.d("Finance", "Invalid income amount entered")
-                return@setOnClickListener
-            }
+        // 🔥 CATEGORY COUNT
+        val categories = sharedPref.getString("categories", "") ?: ""
+        val count = if (categories.isEmpty()) 0 else categories.split("\n").size
+        tvCategoryCount.text = "Categories: $count"
 
+        btnIncome.setOnClickListener {
+            val amount = etAmount.text.toString().toDoubleOrNull() ?: return@setOnClickListener
             balance += amount
-
-            val transaction = "+ R%.2f Income".format(amount)
-            transactionHistory = if (transactionHistory.isEmpty()) {
-                transaction
-            } else {
-                "$transactionHistory\n$transaction"
-            }
-
+            transactionHistory += "\n+ R%.2f".format(amount)
             saveData()
             updateBalance()
-            updateTransactionText()
+            updateTransactions()
             etAmount.text.clear()
-
-            Log.d("Finance", "Income added: $amount")
         }
 
-        // Deduct expense from balance and update history
-        btnAddExpense.setOnClickListener {
-            val amount = etAmount.text.toString().toDoubleOrNull()
-
-            if (amount == null || amount <= 0) {
-                Toast.makeText(this, "Enter a valid amount greater than 0", Toast.LENGTH_SHORT).show()
-                Log.d("Finance", "Invalid expense amount entered")
-                return@setOnClickListener
-            }
-
+        btnExpense.setOnClickListener {
+            val amount = etAmount.text.toString().toDoubleOrNull() ?: return@setOnClickListener
             balance -= amount
-
-            val transaction = "- R%.2f Expense".format(amount)
-            transactionHistory = if (transactionHistory.isEmpty()) {
-                transaction
-            } else {
-                "$transactionHistory\n$transaction"
-            }
-
+            transactionHistory += "\n- R%.2f".format(amount)
             saveData()
             updateBalance()
-            updateTransactionText()
+            updateTransactions()
             etAmount.text.clear()
-
-            Log.d("Finance", "Expense added: $amount")
         }
 
-        // Clear transaction history
-        btnClearHistory.setOnClickListener {
+        btnCategories.setOnClickListener {
+            startActivity(Intent(this, CategoryActivity::class.java))
+        }
+
+        btnGoals.setOnClickListener {
+            startActivity(Intent(this, BudgetGoalActivity::class.java))
+        }
+
+        btnClear.setOnClickListener {
             transactionHistory = ""
             saveData()
-            updateTransactionText()
-            Toast.makeText(this, "Transaction history cleared", Toast.LENGTH_SHORT).show()
-
-            Log.d("Finance", "Transaction history cleared")
+            updateTransactions()
         }
 
-        // Logout and return to login screen
         btnLogout.setOnClickListener {
-            Log.d("Dashboard", "User logged out")
-
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
     }
 
-    // Update balance text on dashboard
     private fun updateBalance() {
         tvBalance.text = "Balance: R%.2f".format(balance)
     }
 
-    // Update transaction history text
-    private fun updateTransactionText() {
-        if (transactionHistory.isEmpty()) {
-            tvTransactions.text = "No transactions yet"
-        } else {
-            tvTransactions.text = transactionHistory
-        }
+    private fun updateTransactions() {
+        tvTransactions.text = if (transactionHistory.isEmpty()) {
+            "No transactions yet"
+        } else transactionHistory
     }
 
-    // Save updated balance and transaction history
     private fun saveData() {
         val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
         val editor = sharedPref.edit()
