@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -9,82 +10,99 @@
         android:orientation="vertical"
         android:padding="20dp">
 
+        <!-- Welcome -->
         <TextView
             android:id="@+id/tvWelcomeUser"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Welcome"
             android:textSize="24sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- Balance -->
         <TextView
             android:id="@+id/tvBalance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Balance: R0.00"
             android:textSize="20sp"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginBottom="8dp"/>
 
-        <!-- NEW: Goals -->
+        <!-- Goals -->
         <TextView
             android:id="@+id/tvGoals"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Goals: Not set"
-            android:layout_marginTop="6dp"/>
+            android:layout_marginBottom="4dp"/>
 
-        <!-- NEW: Category count -->
+        <!-- Category count -->
         <TextView
             android:id="@+id/tvCategoryCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Categories: 0"
-            android:layout_marginBottom="10dp"/>
+            android:layout_marginBottom="12dp"/>
 
+        <!-- Amount input -->
         <EditText
             android:id="@+id/etAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Enter amount"
-            android:inputType="numberDecimal"/>
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- Income -->
         <Button
             android:id="@+id/btnAddIncome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Income"/>
+            android:text="Add Income"
+            android:layout_marginBottom="6dp"/>
 
+        <!-- Expense -->
         <Button
             android:id="@+id/btnAddExpense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Expense"/>
+            android:text="Add Expense"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- Categories -->
         <Button
             android:id="@+id/btnManageCategories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Manage Categories"/>
+            android:text="Manage Categories"
+            android:layout_marginBottom="6dp"/>
 
+        <!-- Budget goals -->
         <Button
             android:id="@+id/btnBudgetGoals"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Set Budget Goals"/>
+            android:text="Set Budget Goals"
+            android:layout_marginBottom="10dp"/>
 
+        <!-- Transactions -->
         <TextView
             android:id="@+id/tvTransactions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="No transactions yet"
-            android:layout_marginTop="10dp"/>
+            android:layout_marginBottom="10dp"/>
 
+        <!-- Clear -->
         <Button
             android:id="@+id/btnClearHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Clear History"/>
+            android:text="Clear History"
+            android:layout_marginBottom="6dp"/>
 
+        <!-- Logout -->
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
