@@ -94,7 +94,7 @@ This project was developed as a group assignment and demonstrates Android develo
 - github actions
 - Automated Testing
 - APK built
- 
+
 ---
 
 ## How to Run the App
@@ -102,3 +102,5 @@ This project was developed as a group assignment and demonstrates Android develo
 1. Clone the repository:
    ```bash
    git clone https://github.com/Suhail-Allie/BudgetBuddy-Clean.git
+2. Youtube video covering features of the app
+   https://youtube.com/shorts/NmNPfvr40QM?feature=share
