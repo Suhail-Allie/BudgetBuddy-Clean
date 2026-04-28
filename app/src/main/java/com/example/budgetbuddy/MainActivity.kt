@@ -2,8 +2,11 @@ package com.example.budgetbuddy
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -11,111 +14,163 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvBalance: TextView
     private lateinit var tvGoals: TextView
     private lateinit var tvCategoryCount: TextView
-    private lateinit var etAmount: EditText
     private lateinit var tvTransactions: TextView
 
+    private lateinit var etAmount: EditText
+    private lateinit var btnAddIncome: Button
+    private lateinit var btnAddExpense: Button
+    private lateinit var btnClearHistory: Button
+    private lateinit var btnLogout: Button
+
+    private lateinit var btnManageCategories: Button
+    private lateinit var btnBudgetGoals: Button
+    private lateinit var btnFilter: Button
+    private lateinit var btnViewReports: Button
+
     private var balance = 0.0
-    private var transactionHistory = ""
+    private val transactionList = mutableListOf<String>()
+
+    private lateinit var dao: ExpenseDao
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-
+        // Initialize views
         tvWelcomeUser = findViewById(R.id.tvWelcomeUser)
         tvBalance = findViewById(R.id.tvBalance)
         tvGoals = findViewById(R.id.tvGoals)
         tvCategoryCount = findViewById(R.id.tvCategoryCount)
-        etAmount = findViewById(R.id.etAmount)
         tvTransactions = findViewById(R.id.tvTransactions)
 
-        val btnIncome = findViewById<Button>(R.id.btnAddIncome)
-        val btnExpense = findViewById<Button>(R.id.btnAddExpense)
-        val btnCategories = findViewById<Button>(R.id.btnManageCategories)
-        val btnGoals = findViewById<Button>(R.id.btnBudgetGoals)
-        val btnClear = findViewById<Button>(R.id.btnClearHistory)
-        val btnLogout = findViewById<Button>(R.id.btnLogout)
+        etAmount = findViewById(R.id.etAmount)
+        btnAddIncome = findViewById(R.id.btnAddIncome)
+        btnAddExpense = findViewById(R.id.btnAddExpense)
+        btnClearHistory = findViewById(R.id.btnClearHistory)
+        btnLogout = findViewById(R.id.btnLogout)
 
-        val username = sharedPref.getString("username", "User")
-        tvWelcomeUser.text = "Welcome, $username"
+        btnManageCategories = findViewById(R.id.btnManageCategories)
+        btnBudgetGoals = findViewById(R.id.btnBudgetGoals)
+        btnFilter = findViewById(R.id.btnFilter)
+        btnViewReports = findViewById(R.id.btnViewReports)
 
-        balance = sharedPref.getFloat("balance", 0f).toDouble()
-        transactionHistory = sharedPref.getString("transactions", "") ?: ""
+        // Database
+        dao = AppDatabase.getDatabase(this).expenseDao()
 
-        updateBalance()
-        updateTransactions()
+        loadUserData()
+        updateBalanceDisplay()
 
-        // 🔥 LOAD GOALS
-        val min = sharedPref.getFloat("minGoal", 0f)
-        val max = sharedPref.getFloat("maxGoal", 0f)
+        // ✅ ADD INCOME
+        btnAddIncome.setOnClickListener {
+            val amount = getAmountInput() ?: return@setOnClickListener
 
-        if (min == 0f && max == 0f) {
-            tvGoals.text = "Goals: Not set"
-        } else {
-            tvGoals.text = "Goals: R%.2f - R%.2f".format(min, max)
-        }
-
-        // 🔥 CATEGORY COUNT
-        val categories = sharedPref.getString("categories", "") ?: ""
-        val count = if (categories.isEmpty()) 0 else categories.split("\n").size
-        tvCategoryCount.text = "Categories: $count"
-
-        btnIncome.setOnClickListener {
-            val amount = etAmount.text.toString().toDoubleOrNull() ?: return@setOnClickListener
             balance += amount
-            transactionHistory += "\n+ R%.2f".format(amount)
-            saveData()
-            updateBalance()
-            updateTransactions()
-            etAmount.text.clear()
+            transactionList.add("Income: +R$amount")
+
+            saveExpense(amount, "Income")
+
+            updateUI()
+            Log.d("Main", "Income added: $amount")
         }
 
-        btnExpense.setOnClickListener {
-            val amount = etAmount.text.toString().toDoubleOrNull() ?: return@setOnClickListener
+        // ❌ ADD EXPENSE
+        btnAddExpense.setOnClickListener {
+            val amount = getAmountInput() ?: return@setOnClickListener
+
             balance -= amount
-            transactionHistory += "\n- R%.2f".format(amount)
-            saveData()
-            updateBalance()
-            updateTransactions()
-            etAmount.text.clear()
+            transactionList.add("Expense: -R$amount")
+
+            saveExpense(amount, "General")
+
+            updateUI()
+            Log.d("Main", "Expense added: $amount")
         }
 
-        btnCategories.setOnClickListener {
-            startActivity(Intent(this, CategoryActivity::class.java))
+        // 🧹 CLEAR HISTORY
+        btnClearHistory.setOnClickListener {
+            transactionList.clear()
+            tvTransactions.text = "No transactions yet"
+            Log.d("Main", "Transaction history cleared")
         }
 
-        btnGoals.setOnClickListener {
-            startActivity(Intent(this, BudgetGoalActivity::class.java))
-        }
-
-        btnClear.setOnClickListener {
-            transactionHistory = ""
-            saveData()
-            updateTransactions()
-        }
-
+        // 🚪 LOGOUT
         btnLogout.setOnClickListener {
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
+
+        // 📂 NAVIGATION
+        btnManageCategories.setOnClickListener {
+            startActivity(Intent(this, CategoryActivity::class.java))
+        }
+
+        btnBudgetGoals.setOnClickListener {
+            startActivity(Intent(this, BudgetGoalActivity::class.java))
+        }
+
+        btnFilter.setOnClickListener {
+            startActivity(Intent(this, FilterActivity::class.java))
+        }
+
+        btnViewReports.setOnClickListener {
+            startActivity(Intent(this, ReportActivity::class.java))
+        }
     }
 
-    private fun updateBalance() {
+    // =========================
+    // HELPERS
+    // =========================
+
+    private fun getAmountInput(): Double? {
+        val input = etAmount.text.toString().trim()
+
+        if (input.isEmpty()) {
+            etAmount.error = "Enter amount"
+            return null
+        }
+
+        return try {
+            input.toDouble()
+        } catch (e: Exception) {
+            etAmount.error = "Invalid number"
+            null
+        }
+    }
+
+    private fun updateUI() {
+        updateBalanceDisplay()
+        tvTransactions.text = transactionList.joinToString("\n")
+        etAmount.text.clear()
+    }
+
+    private fun updateBalanceDisplay() {
         tvBalance.text = "Balance: R%.2f".format(balance)
     }
 
-    private fun updateTransactions() {
-        tvTransactions.text = if (transactionHistory.isEmpty()) {
-            "No transactions yet"
-        } else transactionHistory
+    private fun loadUserData() {
+        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
+        val username = sharedPref.getString("username", "User")
+
+        tvWelcomeUser.text = "Welcome, $username"
+
+        val min = sharedPref.getString("minGoal", "Not set")
+        val max = sharedPref.getString("maxGoal", "Not set")
+
+        tvGoals.text = "Goals: Min R$min | Max R$max"
+
+        val categories = sharedPref.getStringSet("categories", emptySet())
+        tvCategoryCount.text = "Categories: ${categories?.size ?: 0}"
     }
 
-    private fun saveData() {
-        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putFloat("balance", balance.toFloat())
-        editor.putString("transactions", transactionHistory)
-        editor.apply()
+    private fun saveExpense(amount: Double, category: String) {
+        lifecycleScope.launch {
+            dao.insertExpense(
+                Expense(
+                    amount = amount,
+                    category = category,
+                    date = System.currentTimeMillis()
+                )
+            )
+        }
     }
 }

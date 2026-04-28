@@ -17,8 +17,7 @@
             android:layout_height="wrap_content"
             android:text="Welcome"
             android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="10dp"/>
+            android:textStyle="bold" />
 
         <!-- Balance -->
         <TextView
@@ -27,7 +26,7 @@
             android:layout_height="wrap_content"
             android:text="Balance: R0.00"
             android:textSize="20sp"
-            android:layout_marginBottom="8dp"/>
+            android:layout_marginTop="10dp" />
 
         <!-- Goals -->
         <TextView
@@ -35,56 +34,60 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Goals: Not set"
-            android:layout_marginBottom="4dp"/>
+            android:layout_marginTop="6dp" />
 
-        <!-- Category count -->
+        <!-- Category Count -->
         <TextView
             android:id="@+id/tvCategoryCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Categories: 0"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="10dp" />
 
-        <!-- Amount input -->
+        <!-- Amount Input -->
         <EditText
             android:id="@+id/etAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Enter amount"
-            android:inputType="numberDecimal"
-            android:layout_marginBottom="10dp"/>
+            android:inputType="numberDecimal" />
 
-        <!-- Income -->
+        <!-- Buttons -->
         <Button
             android:id="@+id/btnAddIncome"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Income"
-            android:layout_marginBottom="6dp"/>
+            android:text="Add Income" />
 
-        <!-- Expense -->
         <Button
             android:id="@+id/btnAddExpense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Expense"
-            android:layout_marginBottom="10dp"/>
+            android:text="Add Expense" />
 
-        <!-- Categories -->
         <Button
             android:id="@+id/btnManageCategories"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Manage Categories"
-            android:layout_marginBottom="6dp"/>
+            android:text="Manage Categories" />
 
-        <!-- Budget goals -->
         <Button
             android:id="@+id/btnBudgetGoals"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Set Budget Goals"
-            android:layout_marginBottom="10dp"/>
+            android:text="Set Budget Goals" />
+
+        <Button
+            android:id="@+id/btnFilter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Filter Expenses by Date" />
+
+        <Button
+            android:id="@+id/btnViewReports"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="View Reports" />
 
         <!-- Transactions -->
         <TextView
@@ -92,22 +95,19 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="No transactions yet"
-            android:layout_marginBottom="10dp"/>
+            android:layout_marginTop="10dp" />
 
-        <!-- Clear -->
         <Button
             android:id="@+id/btnClearHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Clear History"
-            android:layout_marginBottom="6dp"/>
+            android:text="Clear History" />
 
-        <!-- Logout -->
         <Button
             android:id="@+id/btnLogout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Logout"/>
+            android:text="Logout" />
 
     </LinearLayout>
 </ScrollView>
