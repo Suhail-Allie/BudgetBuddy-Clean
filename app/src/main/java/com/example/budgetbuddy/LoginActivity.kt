@@ -20,63 +20,65 @@ class LoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        // Initialize UI components
         etUsername = findViewById(R.id.etUsername)
         etPassword = findViewById(R.id.etPassword)
         btnLogin = findViewById(R.id.btnLogin)
         tvRegister = findViewById(R.id.tvRegister)
 
-        // Handle login button click
         btnLogin.setOnClickListener {
             val username = etUsername.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
-            // Validate username input
             if (username.isEmpty()) {
-                etUsername.error = "Please enter username"
+                etUsername.error = "Please enter your username"
                 etUsername.requestFocus()
-                Log.d("Login", "Login failed: username empty")
                 return@setOnClickListener
             }
 
-            // Validate password input
             if (password.isEmpty()) {
-                etPassword.error = "Please enter password"
+                etPassword.error = "Please enter your password"
                 etPassword.requestFocus()
-                Log.d("Login", "Login failed: password empty")
                 return@setOnClickListener
             }
 
-            // Retrieve saved user credentials
-            val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-            val savedUsername = sharedPref.getString("username", null)
-            val savedPassword = sharedPref.getString("password", null)
+            val userKey = username.lowercase()
+            val accountPrefs = getSharedPreferences("BudgetBuddyAccounts", MODE_PRIVATE)
 
-            if (savedUsername == null || savedPassword == null) {
-                Toast.makeText(this, "No user registered yet", Toast.LENGTH_SHORT).show()
-                Log.d("Login", "No registered user found")
+            val savedPassword = accountPrefs.getString("password_$userKey", null)
+            val savedDisplayName = accountPrefs.getString("displayName_$userKey", username)
+
+            if (savedPassword == null) {
+                Toast.makeText(this, "User not found. Please register first.", Toast.LENGTH_SHORT).show()
+                Log.d("Login", "Login failed. User not found: $username")
                 return@setOnClickListener
             }
 
-            // Check credentials
-            if (username == savedUsername && password == savedPassword) {
-                Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
-                Log.d("Login", "User logged in successfully")
-
-                val intent = Intent(this, MainActivity::class.java)
-                startActivity(intent)
-                finish()
-            } else {
+            if (savedPassword != password) {
                 Toast.makeText(this, "Invalid username or password", Toast.LENGTH_SHORT).show()
-                Log.d("Login", "Invalid login attempt")
+                Log.d("Login", "Login failed. Incorrect password for: $username")
+                return@setOnClickListener
             }
+
+            /*
+             * This is the important part:
+             * currentUserKey is used for database filtering and per-user preferences.
+             * currentUsername is used only for display.
+             */
+            getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
+                .edit()
+                .putString("currentUserKey", userKey)
+                .putString("currentUsername", savedDisplayName)
+                .apply()
+
+            Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
+            Log.d("Login", "Login successful. userKey=$userKey displayName=$savedDisplayName")
+
+            startActivity(Intent(this, MainActivity::class.java))
+            finish()
         }
 
-        // Navigate to register screen
         tvRegister.setOnClickListener {
-            Log.d("Login", "Navigating to RegisterActivity")
-            val intent = Intent(this, RegisterActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, RegisterActivity::class.java))
         }
     }
 }

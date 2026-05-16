@@ -10,7 +10,6 @@
         android:orientation="vertical"
         android:padding="20dp">
 
-        <!-- Welcome -->
         <TextView
             android:id="@+id/tvWelcomeUser"
             android:layout_width="wrap_content"
@@ -19,40 +18,91 @@
             android:textSize="24sp"
             android:textStyle="bold" />
 
-        <!-- Balance -->
         <TextView
             android:id="@+id/tvBalance"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
             android:text="Balance: R0.00"
             android:textSize="20sp"
-            android:layout_marginTop="10dp" />
+            android:textStyle="bold" />
 
-        <!-- Goals -->
         <TextView
             android:id="@+id/tvGoals"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Goals: Not set"
-            android:layout_marginTop="6dp" />
+            android:layout_marginTop="6dp"
+            android:text="Goals: Not set" />
 
-        <!-- Category Count -->
         <TextView
             android:id="@+id/tvCategoryCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Categories: 0"
-            android:layout_marginBottom="10dp" />
+            android:layout_marginBottom="14dp"
+            android:text="Categories available: 1" />
 
-        <!-- Amount Input -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="Monthly Budget Progress"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvMonthlySpent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="This month spent: R0.00" />
+
+        <ProgressBar
+            android:id="@+id/progressBudget"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="28dp"
+            android:layout_marginTop="8dp"
+            android:indeterminate="false"
+            android:max="100"
+            android:progress="0" />
+
+        <TextView
+            android:id="@+id/tvBudgetPercent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="0% of maximum monthly goal used" />
+
+        <TextView
+            android:id="@+id/tvBudgetStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Set budget goals to track your progress."
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvBadges"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="18dp"
+            android:text="Badges: Add expenses and stay within your goals to unlock rewards." />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:text="Quick Income"
+            android:textStyle="bold" />
+
         <EditText
             android:id="@+id/etAmount"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter amount"
+            android:hint="Enter income amount or pre-fill expense amount"
             android:inputType="numberDecimal" />
 
-        <!-- Buttons -->
         <Button
             android:id="@+id/btnAddIncome"
             android:layout_width="match_parent"
@@ -63,7 +113,7 @@
             android:id="@+id/btnAddExpense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add Expense" />
+            android:text="Add Expense Details" />
 
         <Button
             android:id="@+id/btnManageCategories"
@@ -89,19 +139,18 @@
             android:layout_height="wrap_content"
             android:text="View Reports" />
 
-        <!-- Transactions -->
         <TextView
             android:id="@+id/tvTransactions"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="No transactions yet"
-            android:layout_marginTop="10dp" />
+            android:layout_marginTop="14dp"
+            android:text="No transactions added in this session yet" />
 
         <Button
             android:id="@+id/btnClearHistory"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Clear History" />
+            android:text="Clear Screen History" />
 
         <Button
             android:id="@+id/btnLogout"

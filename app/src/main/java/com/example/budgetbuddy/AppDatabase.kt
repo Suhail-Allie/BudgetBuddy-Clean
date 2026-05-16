@@ -5,7 +5,16 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Expense::class], version = 1)
+/*
+ * Version 2 adds userId to Expense.
+ * fallbackToDestructiveMigration is used because this is still a student project
+ * and old test data can safely be cleared while finalising the POE.
+ */
+@Database(
+    entities = [Expense::class],
+    version = 2,
+    exportSchema = false
+)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun expenseDao(): ExpenseDao
@@ -20,7 +29,10 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "budget_db"
-                ).build()
+                )
+                    .fallbackToDestructiveMigration()
+                    .build()
+
                 INSTANCE = instance
                 instance
             }

@@ -8,10 +8,16 @@ data class Expense(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
+    /*
+     * Each expense belongs to one logged-in user.
+     * This prevents one user's income/expenses from showing on another user's dashboard.
+     */
+    val userId: String = "",
+
     val title: String = "",
     val amount: Double,
     val category: String,
-    val type: String = "expense", // "income" or "expense"
+    val type: String = "expense",
     val date: Long,
     val receiptPhotoPath: String? = null
 )

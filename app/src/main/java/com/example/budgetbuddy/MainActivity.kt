@@ -1,12 +1,22 @@
 package com.example.budgetbuddy
 
+import android.app.DatePickerDialog
 import android.content.Intent
+import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.*
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class MainActivity : AppCompatActivity() {
 
@@ -15,6 +25,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvGoals: TextView
     private lateinit var tvCategoryCount: TextView
     private lateinit var tvTransactions: TextView
+    private lateinit var tvMonthlySpent: TextView
+    private lateinit var tvBudgetStatus: TextView
+    private lateinit var tvBudgetPercent: TextView
+    private lateinit var progressBudget: ProgressBar
+    private lateinit var tvBadges: TextView
 
     private lateinit var etAmount: EditText
     private lateinit var btnAddIncome: Button
@@ -27,21 +42,65 @@ class MainActivity : AppCompatActivity() {
     private lateinit var btnFilter: Button
     private lateinit var btnViewReports: Button
 
-    private var balance = 0.0
-    private val transactionList = mutableListOf<String>()
-
     private lateinit var dao: ExpenseDao
+
+    private lateinit var currentUserKey: String
+    private lateinit var currentDisplayName: String
+    private lateinit var userPrefs: SharedPreferences
+
+    private val transactionList = mutableListOf<String>()
+    private val dateFormatter = SimpleDateFormat("dd MMM yyyy", Locale.getDefault())
+
+    private var activeReceiptPreview: ImageView? = null
+    private var activeReceiptPath: String? = null
+
+    private val receiptPickerLauncher = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri == null) {
+            Toast.makeText(this, "No receipt selected", Toast.LENGTH_SHORT).show()
+            return@registerForActivityResult
+        }
+
+        try {
+            contentResolver.takePersistableUriPermission(
+                uri,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+        } catch (exception: SecurityException) {
+            Log.w("Main", "Could not persist receipt URI permission", exception)
+        }
+
+        activeReceiptPath = uri.toString()
+
+        activeReceiptPreview?.apply {
+            visibility = View.VISIBLE
+            setImageURI(uri)
+        }
+
+        Toast.makeText(this, "Receipt attached", Toast.LENGTH_SHORT).show()
+        Log.d("Main", "Receipt selected for $currentUserKey: $uri")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        currentUserKey = getCurrentUserKey()
+        currentDisplayName = getCurrentDisplayName()
+        userPrefs = getUserPrefs(currentUserKey)
+
         setContentView(R.layout.activity_main)
 
-        // Initialize views
         tvWelcomeUser = findViewById(R.id.tvWelcomeUser)
         tvBalance = findViewById(R.id.tvBalance)
         tvGoals = findViewById(R.id.tvGoals)
         tvCategoryCount = findViewById(R.id.tvCategoryCount)
         tvTransactions = findViewById(R.id.tvTransactions)
+        tvMonthlySpent = findViewById(R.id.tvMonthlySpent)
+        tvBudgetStatus = findViewById(R.id.tvBudgetStatus)
+        tvBudgetPercent = findViewById(R.id.tvBudgetPercent)
+        progressBudget = findViewById(R.id.progressBudget)
+        tvBadges = findViewById(R.id.tvBadges)
 
         etAmount = findViewById(R.id.etAmount)
         btnAddIncome = findViewById(R.id.btnAddIncome)
@@ -54,52 +113,60 @@ class MainActivity : AppCompatActivity() {
         btnFilter = findViewById(R.id.btnFilter)
         btnViewReports = findViewById(R.id.btnViewReports)
 
-        // Database
         dao = AppDatabase.getDatabase(this).expenseDao()
 
         loadUserData()
-        updateBalanceDisplay()
+        observeDashboardData()
 
-        // ✅ ADD INCOME
         btnAddIncome.setOnClickListener {
             val amount = getAmountInput() ?: return@setOnClickListener
 
-            balance += amount
-            transactionList.add("Income: +R$amount")
+            transactionList.add("Income: +R${formatMoney(amount)}")
 
-            saveExpense(amount, "Income")
+            saveExpense(
+                amount = amount,
+                category = "Income",
+                type = "income",
+                title = "Income",
+                date = System.currentTimeMillis(),
+                receiptPhotoPath = null
+            )
 
-            updateUI()
-            Log.d("Main", "Income added: $amount")
+            updateTransactionPreview()
+            etAmount.text.clear()
+
+            Log.d("Main", "Income saved for userKey=$currentUserKey amount=$amount")
         }
 
-        // ❌ ADD EXPENSE
         btnAddExpense.setOnClickListener {
-            val amount = getAmountInput() ?: return@setOnClickListener
-
-            balance -= amount
-            transactionList.add("Expense: -R$amount")
-
-            saveExpense(amount, "General")
-
-            updateUI()
-            Log.d("Main", "Expense added: $amount")
+            showAddExpenseDialog()
         }
 
-        // 🧹 CLEAR HISTORY
         btnClearHistory.setOnClickListener {
             transactionList.clear()
-            tvTransactions.text = "No transactions yet"
-            Log.d("Main", "Transaction history cleared")
+            updateTransactionPreview()
+
+            Toast.makeText(
+                this,
+                "Screen history cleared. Saved data remains in Reports.",
+                Toast.LENGTH_LONG
+            ).show()
+
+            Log.d("Main", "Screen transaction preview cleared for $currentUserKey")
         }
 
-        // 🚪 LOGOUT
         btnLogout.setOnClickListener {
+            getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply()
+
+            Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show()
+
             startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
 
-        // 📂 NAVIGATION
         btnManageCategories.setOnClickListener {
             startActivity(Intent(this, CategoryActivity::class.java))
         }
@@ -117,60 +184,297 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // =========================
-    // HELPERS
-    // =========================
+    override fun onResume() {
+        super.onResume()
+
+        currentUserKey = getCurrentUserKey()
+        currentDisplayName = getCurrentDisplayName()
+        userPrefs = getUserPrefs(currentUserKey)
+
+        loadUserData()
+    }
+
+    private fun showAddExpenseDialog() {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_add_expense, null)
+
+        val etExpenseTitle = dialogView.findViewById<EditText>(R.id.etExpenseTitle)
+        val etExpenseAmount = dialogView.findViewById<EditText>(R.id.etExpenseAmount)
+        val etExpenseDate = dialogView.findViewById<EditText>(R.id.etExpenseDate)
+        val spExpenseCategory = dialogView.findViewById<Spinner>(R.id.spExpenseCategory)
+        val etExpenseNotes = dialogView.findViewById<EditText>(R.id.etExpenseNotes)
+        val btnAttachReceipt = dialogView.findViewById<Button>(R.id.btnTakePhoto)
+        val ivReceiptPreview = dialogView.findViewById<ImageView>(R.id.ivReceiptPreview)
+
+        val quickAmount = etAmount.text.toString().trim()
+        if (quickAmount.isNotEmpty()) {
+            etExpenseAmount.setText(quickAmount)
+        }
+
+        val categories = loadCategories()
+
+        val adapter = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_dropdown_item,
+            categories
+        )
+
+        spExpenseCategory.adapter = adapter
+
+        val selectedDate = Calendar.getInstance()
+        etExpenseDate.setText(dateFormatter.format(selectedDate.time))
+
+        etExpenseDate.setOnClickListener {
+            DatePickerDialog(
+                this,
+                { _, year, month, dayOfMonth ->
+                    selectedDate.set(Calendar.YEAR, year)
+                    selectedDate.set(Calendar.MONTH, month)
+                    selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                    selectedDate.set(Calendar.HOUR_OF_DAY, 12)
+                    selectedDate.set(Calendar.MINUTE, 0)
+                    selectedDate.set(Calendar.SECOND, 0)
+                    selectedDate.set(Calendar.MILLISECOND, 0)
+
+                    etExpenseDate.setText(dateFormatter.format(selectedDate.time))
+                },
+                selectedDate.get(Calendar.YEAR),
+                selectedDate.get(Calendar.MONTH),
+                selectedDate.get(Calendar.DAY_OF_MONTH)
+            ).show()
+        }
+
+        activeReceiptPath = null
+        activeReceiptPreview = ivReceiptPreview
+
+        btnAttachReceipt.setOnClickListener {
+            receiptPickerLauncher.launch(arrayOf("image/*"))
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle("Add Expense Details")
+            .setView(dialogView)
+            .setPositiveButton("Save", null)
+            .setNegativeButton("Cancel") { cancelDialog, _ ->
+                activeReceiptPreview = null
+                activeReceiptPath = null
+                cancelDialog.dismiss()
+            }
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val title = etExpenseTitle.text.toString().trim()
+                val amountText = etExpenseAmount.text.toString().trim()
+                val notes = etExpenseNotes.text.toString().trim()
+                val category = spExpenseCategory.selectedItem?.toString() ?: "General"
+
+                if (title.isEmpty()) {
+                    etExpenseTitle.error = "Expense description is required"
+                    etExpenseTitle.requestFocus()
+                    return@setOnClickListener
+                }
+
+                val amount = amountText.toDoubleOrNull()
+                if (amount == null || amount <= 0.0) {
+                    etExpenseAmount.error = "Enter a valid amount greater than 0"
+                    etExpenseAmount.requestFocus()
+                    return@setOnClickListener
+                }
+
+                val fullTitle = if (notes.isEmpty()) {
+                    title
+                } else {
+                    "$title - $notes"
+                }
+
+                transactionList.add("Expense: -R${formatMoney(amount)} | $category | $title")
+
+                saveExpense(
+                    amount = amount,
+                    category = category,
+                    type = "expense",
+                    title = fullTitle,
+                    date = selectedDate.timeInMillis,
+                    receiptPhotoPath = activeReceiptPath
+                )
+
+                updateTransactionPreview()
+                etAmount.text.clear()
+
+                activeReceiptPreview = null
+                activeReceiptPath = null
+
+                Toast.makeText(this, "Expense saved", Toast.LENGTH_SHORT).show()
+                Log.d("Main", "Expense saved for userKey=$currentUserKey amount=$amount category=$category")
+
+                dialog.dismiss()
+            }
+        }
+
+        dialog.show()
+    }
+
+    private fun observeDashboardData() {
+        lifecycleScope.launch {
+            dao.getExpensesForUser(currentUserKey).collect { expenses ->
+                val minGoal = userPrefs.getFloat("minGoal", 0f)
+                val maxGoal = userPrefs.getFloat("maxGoal", 0f)
+
+                val calendar = Calendar.getInstance()
+                val month = calendar.get(Calendar.MONTH)
+                val year = calendar.get(Calendar.YEAR)
+
+                val balance = BudgetBuddyLogic.calculateBalance(expenses)
+                val monthlySpent = BudgetBuddyLogic.monthlySpending(expenses, month, year)
+                val progress = BudgetBuddyLogic.progressPercent(monthlySpent, maxGoal)
+                val status = BudgetBuddyLogic.budgetStatus(monthlySpent, minGoal, maxGoal)
+                val badges = BudgetBuddyLogic.earnedBadges(
+                    expenses,
+                    monthlySpent,
+                    minGoal,
+                    maxGoal
+                )
+
+                tvBalance.text = "Balance: R${formatMoney(balance)}"
+                tvMonthlySpent.text = "This month spent: R${formatMoney(monthlySpent)}"
+
+                tvBudgetPercent.text = if (maxGoal > 0f) {
+                    "$progress% of maximum monthly goal used"
+                } else {
+                    "Set a maximum goal to activate the progress bar"
+                }
+
+                progressBudget.progress = progress
+                tvBudgetStatus.text = status
+
+                tvBadges.text = if (badges.isEmpty()) {
+                    "Badges: Add expenses and stay within your goals to unlock rewards."
+                } else {
+                    "Badges: ${badges.joinToString("  ")}"
+                }
+
+                Log.d(
+                    "UserCheck",
+                    "Dashboard loaded for userKey=$currentUserKey displayName=$currentDisplayName expenses=${expenses.size}"
+                )
+            }
+        }
+    }
+
+    private fun loadUserData() {
+        val minGoal = userPrefs.getFloat("minGoal", 0f)
+        val maxGoal = userPrefs.getFloat("maxGoal", 0f)
+        val categoryCount = loadCategories().size
+
+        tvWelcomeUser.text = "Welcome, $currentDisplayName"
+
+        tvGoals.text = if (minGoal <= 0f && maxGoal <= 0f) {
+            "Goals: Not set"
+        } else {
+            "Goals: Min R${formatMoney(minGoal.toDouble())} | Max R${formatMoney(maxGoal.toDouble())}"
+        }
+
+        tvCategoryCount.text = "Categories available: $categoryCount"
+
+        Log.d(
+            "UserCheck",
+            "loadUserData userKey=$currentUserKey displayName=$currentDisplayName min=$minGoal max=$maxGoal categories=$categoryCount"
+        )
+    }
+
+    private fun saveExpense(
+        amount: Double,
+        category: String,
+        type: String,
+        title: String,
+        date: Long,
+        receiptPhotoPath: String?
+    ) {
+        lifecycleScope.launch {
+            dao.insertExpense(
+                Expense(
+                    userId = currentUserKey,
+                    title = title,
+                    amount = amount,
+                    category = category,
+                    type = type,
+                    date = date,
+                    receiptPhotoPath = receiptPhotoPath
+                )
+            )
+        }
+    }
 
     private fun getAmountInput(): Double? {
         val input = etAmount.text.toString().trim()
 
         if (input.isEmpty()) {
             etAmount.error = "Enter amount"
+            etAmount.requestFocus()
             return null
         }
 
-        return try {
-            input.toDouble()
-        } catch (e: Exception) {
-            etAmount.error = "Invalid number"
-            null
+        val amount = input.toDoubleOrNull()
+
+        if (amount == null || amount <= 0.0) {
+            etAmount.error = "Enter a valid amount greater than 0"
+            etAmount.requestFocus()
+            return null
+        }
+
+        return amount
+    }
+
+    private fun updateTransactionPreview() {
+        tvTransactions.text = if (transactionList.isEmpty()) {
+            "No transactions added in this session yet"
+        } else {
+            transactionList.takeLast(5).joinToString("\n")
         }
     }
 
-    private fun updateUI() {
-        updateBalanceDisplay()
-        tvTransactions.text = transactionList.joinToString("\n")
-        etAmount.text.clear()
-    }
+    private fun loadCategories(): List<String> {
+        val categoryText = userPrefs.getString("categories", "") ?: ""
 
-    private fun updateBalanceDisplay() {
-        tvBalance.text = "Balance: R%.2f".format(balance)
-    }
+        val savedCategories = categoryText
+            .lines()
+            .map { it.trim() }
+            .filter { it.isNotEmpty() }
 
-    private fun loadUserData() {
-        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-        val username = sharedPref.getString("username", "User")
-
-        tvWelcomeUser.text = "Welcome, $username"
-
-        val min = sharedPref.getString("minGoal", "Not set")
-        val max = sharedPref.getString("maxGoal", "Not set")
-
-        tvGoals.text = "Goals: Min R$min | Max R$max"
-
-        val categories = sharedPref.getStringSet("categories", emptySet())
-        tvCategoryCount.text = "Categories: ${categories?.size ?: 0}"
-    }
-
-    private fun saveExpense(amount: Double, category: String) {
-        lifecycleScope.launch {
-            dao.insertExpense(
-                Expense(
-                    amount = amount,
-                    category = category,
-                    date = System.currentTimeMillis()
-                )
-            )
+        return if (savedCategories.isEmpty()) {
+            listOf("General")
+        } else {
+            savedCategories.distinct()
         }
+    }
+
+    private fun getCurrentUserKey(): String {
+        val sessionPrefs = getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
+        val userKey = sessionPrefs.getString("currentUserKey", null)
+
+        return if (!userKey.isNullOrBlank()) {
+            userKey.trim().lowercase()
+        } else {
+            "guest"
+        }
+    }
+
+    private fun getCurrentDisplayName(): String {
+        val sessionPrefs = getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
+        val displayName = sessionPrefs.getString("currentUsername", null)
+
+        return if (!displayName.isNullOrBlank()) {
+            displayName.trim()
+        } else {
+            "Guest"
+        }
+    }
+
+    private fun getUserPrefs(userKey: String): SharedPreferences {
+        return getSharedPreferences("UserData_${userKey.lowercase()}", MODE_PRIVATE)
+    }
+
+    private fun formatMoney(value: Double): String {
+        return "%.2f".format(value)
     }
 }

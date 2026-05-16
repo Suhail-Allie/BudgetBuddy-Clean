@@ -1,5 +1,6 @@
 package com.example.budgetbuddy
 
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
@@ -16,43 +17,49 @@ class CategoryActivity : AppCompatActivity() {
     private lateinit var btnBackToDashboard: Button
     private lateinit var tvCategoryList: TextView
 
+    private lateinit var currentUserKey: String
+    private lateinit var currentDisplayName: String
+    private lateinit var userPrefs: SharedPreferences
+
     private var categories = ""
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_category)
 
-        // Initialize UI components
         etCategoryName = findViewById(R.id.etCategoryName)
         btnAddCategory = findViewById(R.id.btnAddCategory)
         btnClearCategories = findViewById(R.id.btnClearCategories)
         btnBackToDashboard = findViewById(R.id.btnBackToDashboard)
         tvCategoryList = findViewById(R.id.tvCategoryList)
 
-        // Load saved categories from local storage
-        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-        categories = sharedPref.getString("categories", "") ?: ""
+        currentUserKey = getCurrentUserKey()
+        currentDisplayName = getCurrentDisplayName()
+        userPrefs = getUserPrefs(currentUserKey)
 
+        categories = userPrefs.getString("categories", "") ?: ""
         updateCategoryList()
 
-        // Add a new category after validation
         btnAddCategory.setOnClickListener {
             val categoryName = etCategoryName.text.toString().trim()
 
             if (categoryName.isEmpty()) {
                 etCategoryName.error = "Please enter a category name"
                 etCategoryName.requestFocus()
-                Log.d("Category", "Category not added: empty input")
                 return@setOnClickListener
             }
 
-            if (categories.contains(categoryName, ignoreCase = true)) {
+            val existingCategories = categories
+                .lines()
+                .map { it.trim().lowercase() }
+                .filter { it.isNotEmpty() }
+
+            if (existingCategories.contains(categoryName.lowercase())) {
                 Toast.makeText(this, "Category already exists", Toast.LENGTH_SHORT).show()
-                Log.d("Category", "Duplicate category blocked: $categoryName")
                 return@setOnClickListener
             }
 
-            categories = if (categories.isEmpty()) {
+            categories = if (categories.isBlank()) {
                 categoryName
             } else {
                 "$categories\n$categoryName"
@@ -63,39 +70,60 @@ class CategoryActivity : AppCompatActivity() {
             etCategoryName.text.clear()
 
             Toast.makeText(this, "Category added", Toast.LENGTH_SHORT).show()
-            Log.d("Category", "Category added: $categoryName")
+            Log.d("Category", "Category added for userKey=$currentUserKey category=$categoryName")
         }
 
-        // Clear all saved categories
         btnClearCategories.setOnClickListener {
             categories = ""
             saveCategories()
             updateCategoryList()
+
             Toast.makeText(this, "Categories cleared", Toast.LENGTH_SHORT).show()
-            Log.d("Category", "All categories cleared")
+            Log.d("Category", "Categories cleared for userKey=$currentUserKey")
         }
 
-        // Return to dashboard
         btnBackToDashboard.setOnClickListener {
-            Log.d("Category", "Returning to dashboard")
             finish()
         }
     }
 
-    // Display category list on screen
     private fun updateCategoryList() {
-        tvCategoryList.text = if (categories.isEmpty()) {
-            "No categories added yet"
+        tvCategoryList.text = if (categories.isBlank()) {
+            "No categories added yet for $currentDisplayName"
         } else {
             categories
         }
     }
 
-    // Save categories locally
     private fun saveCategories() {
-        val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-        val editor = sharedPref.edit()
-        editor.putString("categories", categories)
-        editor.apply()
+        userPrefs.edit()
+            .putString("categories", categories)
+            .apply()
+    }
+
+    private fun getCurrentUserKey(): String {
+        val sessionPrefs = getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
+        val userKey = sessionPrefs.getString("currentUserKey", null)
+
+        return if (!userKey.isNullOrBlank()) {
+            userKey.trim().lowercase()
+        } else {
+            "guest"
+        }
+    }
+
+    private fun getCurrentDisplayName(): String {
+        val sessionPrefs = getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
+        val displayName = sessionPrefs.getString("currentUsername", null)
+
+        return if (!displayName.isNullOrBlank()) {
+            displayName.trim()
+        } else {
+            "Guest"
+        }
+    }
+
+    private fun getUserPrefs(userKey: String): SharedPreferences {
+        return getSharedPreferences("UserData_${userKey.lowercase()}", MODE_PRIVATE)
     }
 }

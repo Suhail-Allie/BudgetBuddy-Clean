@@ -21,68 +21,73 @@ class RegisterActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
-        // Initialize UI components
         etNewUsername = findViewById(R.id.etNewUsername)
         etNewPassword = findViewById(R.id.etNewPassword)
         etConfirmPassword = findViewById(R.id.etConfirmPassword)
         btnRegister = findViewById(R.id.btnRegister)
         tvBackToLogin = findViewById(R.id.tvBackToLogin)
 
-        // Handle register button click
         btnRegister.setOnClickListener {
             val username = etNewUsername.text.toString().trim()
             val password = etNewPassword.text.toString().trim()
             val confirmPassword = etConfirmPassword.text.toString().trim()
 
-            // Validate user input before saving
             if (username.isEmpty()) {
-                etNewUsername.error = "Please enter username"
+                etNewUsername.error = "Please enter a username"
                 etNewUsername.requestFocus()
-                Log.d("Register", "Registration failed: username field empty")
                 return@setOnClickListener
             }
 
             if (password.isEmpty()) {
-                etNewPassword.error = "Please enter password"
+                etNewPassword.error = "Please enter a password"
                 etNewPassword.requestFocus()
-                Log.d("Register", "Registration failed: password field empty")
                 return@setOnClickListener
             }
 
             if (confirmPassword.isEmpty()) {
-                etConfirmPassword.error = "Please confirm password"
+                etConfirmPassword.error = "Please confirm your password"
                 etConfirmPassword.requestFocus()
-                Log.d("Register", "Registration failed: confirm password field empty")
                 return@setOnClickListener
             }
 
             if (password != confirmPassword) {
                 etConfirmPassword.error = "Passwords do not match"
                 etConfirmPassword.requestFocus()
-                Log.d("Register", "Registration failed: passwords do not match")
                 return@setOnClickListener
             }
 
-            // Save user details locally using SharedPreferences
-            val sharedPref = getSharedPreferences("UserData", MODE_PRIVATE)
-            val editor = sharedPref.edit()
-            editor.putString("username", username)
-            editor.putString("password", password)
-            editor.apply()
+            val userKey = username.lowercase()
+            val accountPrefs = getSharedPreferences("BudgetBuddyAccounts", MODE_PRIVATE)
 
-            Toast.makeText(this, "Registration successful", Toast.LENGTH_SHORT).show()
-            Log.d("Register", "User registered successfully")
+            if (accountPrefs.contains("password_$userKey")) {
+                Toast.makeText(this, "Username already exists. Please choose another.", Toast.LENGTH_SHORT).show()
+                Log.d("Register", "Duplicate username blocked: $username")
+                return@setOnClickListener
+            }
 
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            accountPrefs.edit()
+                .putString("password_$userKey", password)
+                .putString("displayName_$userKey", username)
+                .apply()
+
+            /*
+             * Clear any previous logged-in session after registration.
+             * The user must login using the new account.
+             */
+            getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply()
+
+            Toast.makeText(this, "Registration successful. Please login.", Toast.LENGTH_SHORT).show()
+            Log.d("Register", "Registered user: userKey=$userKey displayName=$username")
+
+            startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
 
-        // Navigate back to login screen
         tvBackToLogin.setOnClickListener {
-            Log.d("Register", "Navigating back to LoginActivity")
-            val intent = Intent(this, LoginActivity::class.java)
-            startActivity(intent)
+            startActivity(Intent(this, LoginActivity::class.java))
             finish()
         }
     }
