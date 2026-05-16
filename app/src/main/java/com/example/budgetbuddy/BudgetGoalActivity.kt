@@ -73,7 +73,7 @@ class BudgetGoalActivity : AppCompatActivity() {
         }
 
         btnBack.setOnClickListener {
-            finish()
+            NavigationUtils.closeScreen(this)
         }
     }
 

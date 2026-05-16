@@ -1,14 +1,237 @@
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent" android:layout_height="match_parent" android:padding="20dp">
-    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical">
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_gravity="center" android:layout_marginBottom="15dp" android:text="REPORT" android:textSize="24sp" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvTotalIncome" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="5dp" android:text="Total Income: R0.00"/>
-        <TextView android:id="@+id/tvTotalExpense" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="5dp" android:text="Total Expenses: R0.00"/>
-        <TextView android:id="@+id/tvRemaining" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:text="Remaining: R0.00"/>
-        <TextView android:id="@+id/tvGoalLines" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="15dp" android:text="Budget Goals: Not set" android:textStyle="bold"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:text="Category Breakdown" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvCategoryBreakdown" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="20dp" android:text="No data yet"/>
-        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginBottom="10dp" android:text="Visual Spending Graph" android:textStyle="bold"/>
-        <TextView android:id="@+id/tvSpendingGraph" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginBottom="20dp" android:fontFamily="monospace" android:text="No graph data yet"/>
-        <Button android:id="@+id/btnBackToDashboard" android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="12dp" android:text="Back to Dashboard" android:textSize="16sp"/>
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/reportScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_gradient"
+    android:fillViewport="true"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Financial Reports"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Review your income, expenses, goals, and category spending."
+                android:textColor="@color/bb_text_secondary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Summary Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Summary"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTotalIncome"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:text="Total Income: R0.00"
+                android:textColor="@color/bb_success"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTotalExpense"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Total Expenses: R0.00"
+                android:textColor="@color/bb_danger"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginBottom="14dp"
+                android:background="@color/bb_divider" />
+
+            <TextView
+                android:id="@+id/tvRemaining"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Remaining: R0.00"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Goals Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Budget Goal Reference"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvGoalLines"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_badge"
+                android:lineSpacingExtra="4dp"
+                android:text="Budget Goals: Not set"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Category Breakdown Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Category Breakdown"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Total expenses grouped by spending category."
+                android:textColor="@color/bb_text_secondary"
+                android:textSize="13sp" />
+
+            <TextView
+                android:id="@+id/tvCategoryBreakdown"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:lineSpacingExtra="8dp"
+                android:text="No expense data available yet."
+                android:textColor="@color/bb_text_primary"
+                android:textSize="15sp" />
+
+        </LinearLayout>
+
+        <!-- Graph Card -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="18dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Visual Spending Graph"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="A visual comparison of category spending."
+                android:textColor="@color/bb_text_secondary"
+                android:textSize="13sp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:fillViewport="true"
+                android:overScrollMode="never">
+
+                <TextView
+                    android:id="@+id/tvSpendingGraph"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@color/bb_surface_soft"
+                    android:fontFamily="monospace"
+                    android:lineSpacingExtra="5dp"
+                    android:minWidth="300dp"
+                    android:padding="14dp"
+                    android:text="No graph data available yet."
+                    android:textColor="@color/bb_text_primary"
+                    android:textSize="13sp" />
+
+            </HorizontalScrollView>
+
+        </LinearLayout>
+
+        <!-- Back Button -->
+        <Button
+            android:id="@+id/btnBackToDashboard"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_button_primary"
+            android:text="Back to Dashboard"
+            android:textAllCaps="false"
+            android:textColor="@color/bb_text_on_primary"
+            android:textStyle="bold" />
+
     </LinearLayout>
+
 </ScrollView>

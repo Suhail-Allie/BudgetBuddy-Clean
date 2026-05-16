@@ -44,7 +44,7 @@ class ReportActivity : AppCompatActivity() {
         dao = AppDatabase.getDatabase(this).expenseDao()
 
         btnBackToDashboard.setOnClickListener {
-            finish()
+            NavigationUtils.closeScreen(this)
         }
 
         lifecycleScope.launch {

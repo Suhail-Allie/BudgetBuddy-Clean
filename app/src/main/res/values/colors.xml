@@ -1,5 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="black">#FF000000</color>
-    <color name="white">#FFFFFFFF</color>
+    <!-- Brand colours -->
+    <color name="bb_primary">#5E4BB6</color>
+    <color name="bb_primary_dark">#3F2E8C</color>
+    <color name="bb_primary_light">#7B68D8</color>
+
+    <!-- Accent colours -->
+    <color name="bb_accent">#20C997</color>
+    <color name="bb_accent_dark">#159A74</color>
+
+    <!-- Backgrounds -->
+    <color name="bb_background">#F6F4FB</color>
+    <color name="bb_surface">#FFFFFF</color>
+    <color name="bb_surface_soft">#F0ECFA</color>
+
+    <!-- Text -->
+    <color name="bb_text_primary">#202124</color>
+    <color name="bb_text_secondary">#6B6478</color>
+    <color name="bb_text_on_primary">#FFFFFF</color>
+
+    <!-- Status colours -->
+    <color name="bb_success">#198754</color>
+    <color name="bb_warning">#F59F00</color>
+    <color name="bb_danger">#DC3545</color>
+
+    <!-- Borders and dividers -->
+    <color name="bb_border">#DDD6F3</color>
+    <color name="bb_divider">#E8E2F5</color>
+
+    <!-- Default Android template compatibility -->
+    <color name="purple_200">#BB86FC</color>
+    <color name="purple_500">#5E4BB6</color>
+    <color name="purple_700">#3F2E8C</color>
+    <color name="teal_200">#20C997</color>
+    <color name="teal_700">#159A74</color>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
 </resources>

@@ -163,24 +163,24 @@ class MainActivity : AppCompatActivity() {
 
             Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show()
 
-            startActivity(Intent(this, LoginActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, LoginActivity::class.java))
             finish()
         }
 
         btnManageCategories.setOnClickListener {
-            startActivity(Intent(this, CategoryActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, CategoryActivity::class.java))
         }
 
         btnBudgetGoals.setOnClickListener {
-            startActivity(Intent(this, BudgetGoalActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, BudgetGoalActivity::class.java))
         }
 
         btnFilter.setOnClickListener {
-            startActivity(Intent(this, FilterActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, FilterActivity::class.java))
         }
 
         btnViewReports.setOnClickListener {
-            startActivity(Intent(this, ReportActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, ReportActivity::class.java))
         }
     }
 

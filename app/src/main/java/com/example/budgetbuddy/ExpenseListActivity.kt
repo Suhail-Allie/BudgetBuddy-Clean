@@ -1,6 +1,8 @@
 package com.example.budgetbuddy
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
@@ -12,6 +14,8 @@ import java.util.Locale
 class ExpenseListActivity : AppCompatActivity() {
 
     private lateinit var tvList: TextView
+    private lateinit var btnBackToFilter: Button
+    private lateinit var btnBackToDashboard: Button
     private lateinit var dao: ExpenseDao
 
     private lateinit var currentUserKey: String
@@ -24,6 +28,9 @@ class ExpenseListActivity : AppCompatActivity() {
         setContentView(R.layout.activity_expense_list)
 
         tvList = findViewById(R.id.tvExpenseList)
+        btnBackToFilter = findViewById(R.id.btnBackToFilter)
+        btnBackToDashboard = findViewById(R.id.btnBackToDashboard)
+
         dao = AppDatabase.getDatabase(this).expenseDao()
 
         currentUserKey = getCurrentUserKey()
@@ -31,6 +38,17 @@ class ExpenseListActivity : AppCompatActivity() {
 
         val start = intent.getLongExtra("startDate", 0L)
         val end = intent.getLongExtra("endDate", Long.MAX_VALUE)
+
+        btnBackToFilter.setOnClickListener {
+            NavigationUtils.closeScreen(this)
+        }
+
+        btnBackToDashboard.setOnClickListener {
+            val dashboardIntent = Intent(this, MainActivity::class.java)
+            dashboardIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            NavigationUtils.openScreen(this, dashboardIntent)
+            finish()
+        }
 
         lifecycleScope.launch {
             dao.getExpensesBetweenDatesForUser(currentUserKey, start, end).collect { list ->

@@ -83,7 +83,7 @@ class CategoryActivity : AppCompatActivity() {
         }
 
         btnBackToDashboard.setOnClickListener {
-            finish()
+            NavigationUtils.closeScreen(this)
         }
     }
 

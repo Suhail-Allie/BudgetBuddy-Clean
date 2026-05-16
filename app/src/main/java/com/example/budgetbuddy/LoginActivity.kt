@@ -59,11 +59,6 @@ class LoginActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            /*
-             * This is the important part:
-             * currentUserKey is used for database filtering and per-user preferences.
-             * currentUsername is used only for display.
-             */
             getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
                 .edit()
                 .putString("currentUserKey", userKey)
@@ -73,12 +68,12 @@ class LoginActivity : AppCompatActivity() {
             Toast.makeText(this, "Login successful", Toast.LENGTH_SHORT).show()
             Log.d("Login", "Login successful. userKey=$userKey displayName=$savedDisplayName")
 
-            startActivity(Intent(this, MainActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, MainActivity::class.java))
             finish()
         }
 
         tvRegister.setOnClickListener {
-            startActivity(Intent(this, RegisterActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, RegisterActivity::class.java))
         }
     }
 }

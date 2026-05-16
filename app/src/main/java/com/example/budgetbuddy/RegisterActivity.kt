@@ -70,10 +70,6 @@ class RegisterActivity : AppCompatActivity() {
                 .putString("displayName_$userKey", username)
                 .apply()
 
-            /*
-             * Clear any previous logged-in session after registration.
-             * The user must login using the new account.
-             */
             getSharedPreferences("BudgetBuddySession", MODE_PRIVATE)
                 .edit()
                 .clear()
@@ -82,12 +78,12 @@ class RegisterActivity : AppCompatActivity() {
             Toast.makeText(this, "Registration successful. Please login.", Toast.LENGTH_SHORT).show()
             Log.d("Register", "Registered user: userKey=$userKey displayName=$username")
 
-            startActivity(Intent(this, LoginActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, LoginActivity::class.java))
             finish()
         }
 
         tvBackToLogin.setOnClickListener {
-            startActivity(Intent(this, LoginActivity::class.java))
+            NavigationUtils.openScreen(this, Intent(this, LoginActivity::class.java))
             finish()
         }
     }

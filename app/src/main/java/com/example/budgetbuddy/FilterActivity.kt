@@ -5,13 +5,13 @@ import android.os.Bundle
 import android.widget.Button
 import android.widget.DatePicker
 import androidx.appcompat.app.AppCompatActivity
-import java.util.*
+import java.util.Calendar
 
 class FilterActivity : AppCompatActivity() {
 
     private lateinit var dpStart: DatePicker
     private lateinit var dpEnd: DatePicker
-    private lateinit var btnApply: Button
+    private lateinit var btnApplyFilter: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -19,21 +19,36 @@ class FilterActivity : AppCompatActivity() {
 
         dpStart = findViewById(R.id.dpStart)
         dpEnd = findViewById(R.id.dpEnd)
-        btnApply = findViewById(R.id.btnApplyFilter)
+        btnApplyFilter = findViewById(R.id.btnApplyFilter)
 
-        btnApply.setOnClickListener {
+        btnApplyFilter.setOnClickListener {
+            val startCalendar = Calendar.getInstance()
+            startCalendar.set(
+                dpStart.year,
+                dpStart.month,
+                dpStart.dayOfMonth,
+                0,
+                0,
+                0
+            )
+            startCalendar.set(Calendar.MILLISECOND, 0)
 
-            val startCal = Calendar.getInstance()
-            startCal.set(dpStart.year, dpStart.month, dpStart.dayOfMonth, 0, 0)
-
-            val endCal = Calendar.getInstance()
-            endCal.set(dpEnd.year, dpEnd.month, dpEnd.dayOfMonth, 23, 59)
+            val endCalendar = Calendar.getInstance()
+            endCalendar.set(
+                dpEnd.year,
+                dpEnd.month,
+                dpEnd.dayOfMonth,
+                23,
+                59,
+                59
+            )
+            endCalendar.set(Calendar.MILLISECOND, 999)
 
             val intent = Intent(this, ExpenseListActivity::class.java)
-            intent.putExtra("startDate", startCal.timeInMillis)
-            intent.putExtra("endDate", endCal.timeInMillis)
+            intent.putExtra("startDate", startCalendar.timeInMillis)
+            intent.putExtra("endDate", endCalendar.timeInMillis)
 
-            startActivity(intent)
+            NavigationUtils.openScreen(this, intent)
         }
     }
 }

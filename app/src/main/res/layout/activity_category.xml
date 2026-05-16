@@ -1,69 +1,158 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/categoryScrollView"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true">
+    android:background="@drawable/bg_app_gradient"
+    android:fillViewport="true"
+    android:overScrollMode="never">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp">
+        android:padding="18dp">
 
-        <TextView
-            android:id="@+id/tvCategoryTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Manage Categories"
-            android:textSize="26sp"
-            android:textStyle="bold" />
-
-        <EditText
-            android:id="@+id/etCategoryName"
+        <!-- Header -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:hint="Enter category name"
-            android:inputType="text"
-            android:minHeight="48dp" />
+            android:orientation="vertical"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp">
 
-        <Button
-            android:id="@+id/btnAddCategory"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Manage Categories"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="26sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Create categories to organise your spending."
+                android:textColor="@color/bb_text_secondary"
+                android:textSize="14sp" />
+
+        </LinearLayout>
+
+        <!-- Add Category Card -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:text="Add Category" />
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="18dp">
 
-        <TextView
-            android:id="@+id/tvCategoryListTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="32dp"
-            android:text="Saved Categories"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="New Category"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/tvCategoryList"
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Examples: Groceries, Transport, Entertainment, Rent."
+                android:textColor="@color/bb_text_secondary"
+                android:textSize="13sp" />
+
+            <EditText
+                android:id="@+id/etCategoryName"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="16dp"
+                android:background="@drawable/bg_input"
+                android:hint="Enter category name"
+                android:inputType="textCapWords"
+                android:paddingLeft="14dp"
+                android:paddingRight="14dp"
+                android:singleLine="true"
+                android:textColor="@color/bb_text_primary"
+                android:textColorHint="@color/bb_text_secondary"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnAddCategory"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_button_primary"
+                android:text="Add Category"
+                android:textAllCaps="false"
+                android:textColor="@color/bb_text_on_primary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <!-- Category List Card -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:text="No categories added yet"
-            android:textSize="16sp" />
+            android:layout_marginTop="14dp"
+            android:background="@drawable/bg_card"
+            android:elevation="4dp"
+            android:orientation="vertical"
+            android:padding="18dp">
 
-        <Button
-            android:id="@+id/btnClearCategories"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Clear Categories" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="Saved Categories"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvCategoryList"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/bg_badge"
+                android:lineSpacingExtra="7dp"
+                android:minHeight="90dp"
+                android:text="No categories added yet"
+                android:textColor="@color/bb_text_primary"
+                android:textSize="15sp" />
+
+            <Button
+                android:id="@+id/btnClearCategories"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_button_secondary"
+                android:text="Clear Categories"
+                android:textAllCaps="false"
+                android:textColor="@color/bb_primary_dark"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
 
         <Button
             android:id="@+id/btnBackToDashboard"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="52dp"
             android:layout_marginTop="16dp"
-            android:text="Back to Dashboard" />
+            android:layout_marginBottom="20dp"
+            android:background="@drawable/bg_button_primary"
+            android:text="Back to Dashboard"
+            android:textAllCaps="false"
+            android:textColor="@color/bb_text_on_primary"
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
     </LinearLayout>
+
 </ScrollView>
