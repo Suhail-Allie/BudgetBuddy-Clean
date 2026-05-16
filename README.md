@@ -250,16 +250,41 @@ This helps prove that the main calculation logic works correctly.
 
 The app includes the following screens:
 
-- Login Screen
-- Register Screen
-- Dashboard
-- Category Management Screen
-- Budget Goals Screen
-- Add Expense Details Dialog
-- Filter Expenses Screen
-- Expense List Screen
-- Reports Screen
+### Login Screen
+![Login Screen](screenshots/Login.jpg)
 
+### Register Screen
+![Register Screen](screenshots/Register.jpg)
+
+### Dashboard
+![Dashboard](screenshots/Dashboard.jpg)
+
+### Dashboard1
+![Dashboard1](screenshots/Dashboard1.jpg)
+
+### Add Expense Details
+![Add Expense Details](screenshots/ExpenseDetails.jpg)
+
+### Categories
+![Categories](screenshots/Categories.jpg)
+
+### Budget Goals
+![Budget Goals](screenshots/BudgetGoals.jpg)
+
+### Reports and Graph
+![Reports and Graph](screenshots/Reports.jpg)
+
+### Reports and Graph1
+![Reports and Graph1](screenshots/Reports1.jpg)
+
+### Filter Expenses
+![Filter Expenses](screenshots/Filter.jpg)
+
+### Filtered Expense1
+![Filtered Expense1](screenshots/Filter1.jpg)
+
+### GitHub Actions
+![GitHub Actions](screenshots/github_actions.png)
 ---
 
 ## How to Run the App
